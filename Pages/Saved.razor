@@ -1,0 +1,52 @@
+﻿@page "/saved"
+@inject RestService restService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<h3>Saved</h3>
+
+<style>
+    .list-group {
+        max-height: 600px;
+        overflow-x: hidden;
+        margin-bottom: 10px;
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+    }
+</style>
+
+@if (articles != null && articles.Count > 0)
+{
+    <div class="list-group">
+        @foreach (Article article in articles)
+        {
+            <div class="list-group-item list-group-item-action">
+                <a href="@article.Url" style="font-size: 12px" class="font-weight-bold mb-0">@article.Title</a>
+                <span class="font-weight-light mt-0" style="font-size: 10px">(@article.Url)</span>
+                <span class="float-right">
+                    <button class="btn btn-outline-secondary" @onclick="(async () => await DeleteArticle(article))">Delete</button>
+                </span>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No saved articles found.</p>
+}
+
+@code
+{
+    private List<Article> articles = new List<Article>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        articles = await localStorage.GetItemAsync<List<Article>>("savedArticles");
+    }
+
+    private async Task DeleteArticle(Article article)
+    {
+        articles.Remove(article);
+        await localStorage.SetItemAsync("savedArticles", articles);
+        articles = await localStorage.GetItemAsync<List<Article>>("savedArticles");
+    }
+}

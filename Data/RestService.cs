@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using BlazorNews.Models;
+using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Net;
 
 namespace BlazorNews.Data
 {
@@ -12,9 +16,9 @@ namespace BlazorNews.Data
 
         public readonly int PageCount = 15;
 
-        public RestService()
+        public RestService(HttpClient http)
         {
-            client = new HttpClient();
+            client = http;
         }
 
         public async Task<List<Article>> PerformFeedPaging()

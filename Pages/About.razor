@@ -1,0 +1,22 @@
+﻿@page "/about"
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+<div class="alert alert-success @alertDeletionSuccessCss mt-b" role="alert">
+    Saved articles deleted!
+</div>
+<h3>About</h3>
+
+<h5>BlazorNews Version 1.0</h5>
+<p>App by Andrew Ettensohn. Released 2020 of August.</p>
+
+<a href="#" class="btn btn-primary">Visit GitHub Repo</a>
+<button class="btn btn-danger" @onclick="DeleteAllSavedArticles">Delete Saved Articles</button>
+
+@code {
+    private string alertDeletionSuccessCss = "d-none";
+    private async Task DeleteAllSavedArticles()
+    {
+        await localStorage.ClearAsync(); //< List < Article >> ("savedArticles");
+        alertDeletionSuccessCss = string.Empty;
+    }
+
+}
