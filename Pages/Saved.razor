@@ -2,17 +2,17 @@
 @inject RestService restService
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
-<h3>Saved</h3>
-
 <style>
     .list-group {
-        max-height: 600px;
-        overflow-x: hidden;
-        margin-bottom: 10px;
-        overflow-y: scroll;
-        -webkit-overflow-scrolling: touch;
+        max-height: 600px !important;
+        overflow-x: hidden !important;
+        margin-bottom: 10px !important;
+        overflow-y: scroll !important;
+        -webkit-overflow-scrolling: touch !important;
     }
 </style>
+
+<h3 class="px-3">Saved</h3>
 
 @if (articles != null && articles.Count > 0)
 {
