@@ -23,7 +23,7 @@
                 <a href="@article.Url" style="font-size: 12px" class="font-weight-bold mb-0" target="_blank" rel="noopener noreferrer">@article.Title</a>
                 <span class="font-weight-light mt-0" style="font-size: 10px">(@article.Url)</span>
                 <span class="float-right">
-                    <button class="btn btn-outline-secondary" @onclick="(async () => await DeleteArticle(article))">Delete</button>
+                    <button class="btn btn-outline-secondary" @onclick="(async () => await DeleteArticle(article))">Unsave</button>
                 </span>
             </div>
         }
