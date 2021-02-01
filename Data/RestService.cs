@@ -23,8 +23,28 @@ namespace BlazorNews.Data
 
         public async Task<List<Article>> PerformFeedPaging()
         {
-            List<int> newPageIds = ArticleIds.GetRange(0, PageCount);
-            ArticleIds.RemoveRange(0, PageCount);
+            List<int> newPageIds = new List<int>();
+            try
+            {
+                if (ArticleIds.Count >= PageCount)
+                {
+                    newPageIds = ArticleIds.GetRange(0, PageCount);
+                    ArticleIds.RemoveRange(0, PageCount);
+                }
+                else if(ArticleIds.Count > 0)
+                {
+                    newPageIds = ArticleIds.GetRange(0, ArticleIds.Count);
+                    ArticleIds.RemoveRange(0, ArticleIds.Count);
+                }
+                else
+                {
+                    return new List<Article>();
+                }
+            }
+            catch(Exception ex)
+            {
+
+            }
 
             List<Article> newArticles = await GetArticlesFromIds(newPageIds);
             newArticles = RemoveNonArticles(newArticles);

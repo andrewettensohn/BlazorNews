@@ -1,0 +1,32 @@
+﻿@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<Card>
+    <CardBody>
+        <CardTitle Size="5" Class="mb-1"><a href="@Article.Url">@Article.Title</a></CardTitle>
+        <CardText Class="mb-2">
+            <span style="opacity: 0.7">@Article.Url</span>
+        </CardText>
+        @if (Article.Saved)
+        {
+            <Button Color="Color.Danger" @onclick="() => DeleteArticle.InvokeAsync(Article)">Unsave</Button>
+        }
+        else
+        {
+            <Button Color="Color.Success" @onclick="() => SaveArticle.InvokeAsync(Article)">Save</Button>
+        }
+    </CardBody>
+</Card>
+
+@code {
+
+    [Parameter]
+    public Article Article { get; set; }
+
+    [Parameter]
+    public EventCallback<Article> DeleteArticle { get; set; }
+
+    [Parameter]
+    public EventCallback<Article> SaveArticle { get; set; }
+
+
+}

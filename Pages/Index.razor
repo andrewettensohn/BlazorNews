@@ -3,73 +3,137 @@
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 <style>
-    .list-group {
-        max-height: 500px;
+    .windowFeed {
+        max-height: 1000px;
         overflow-x: hidden;
         margin-bottom: 10px;
+        border-bottom: 5px;
         overflow-y: scroll;
         -webkit-overflow-scrolling: touch;
     }
 </style>
 
-<h3 class="px-3">Hacker News Feed</h3>
+<Container>
+    <h5 class="px-3">Hacker News Feed</h5>
+    <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
+        <Items>
+            <Tab Name="feed">Feed</Tab>
+            <Tab Name="saved">Saved</Tab>
+            <Tab Name="settings">Settings</Tab>
+        </Items>
+        <Content>
+            <TabPanel Name="feed">
+                <div class="d-block d-sm-none windowFeed">
+                    <Virtualize Items="@Articles" Context="article">
+                        <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
+                    </Virtualize>
+                </div>
+                <div class="d-none d-sm-block">
+                    <Virtualize Items="@Articles" Context="article">
+                        <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
+                    </Virtualize>
+                </div>
+            </TabPanel>
+            <TabPanel Name="saved">
+                <Virtualize Items="@SavedArticles" Context="article">
+                    <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
+                </Virtualize>
+            </TabPanel>
+            <TabPanel Name="settings">
+                <SettingsComponent DeleteAllSavedArticles="DeleteAllSavedArticles" />
+            </TabPanel>
+        </Content>
+    </Tabs>
+</Container>
 
-@if (articles != null)
-{
-<div class="list-group">
-    @foreach (Article article in articles)
-        {
-        <div class="list-group-item list-group-item-action">
-            <a href="@article.Url" style="font-size: 12px" class="font-weight-bold mb-0" target="_blank" rel="noopener noreferrer">@article.Title</a>
-            <span class="font-weight-light mt-0" style="font-size: 10px">(@article.Url)</span>
-            <span class="float-right">
-                @if(article.Saved)
-                {
-                <button class="btn btn-outline-secondary" @onclick="(async () => await DeleteArticle(article))">Unsave</button>
-                }
-                else
-                {
-                <button class="btn btn-outline-secondary" @onclick="(async () => await SaveArticle(article))">Save</button>
-                }
-            </span>
-        </div>
-        }
-</div>
-<div class="d-flex justify-content-center">
-    <div class="spinner-border @loadingCss" role="status">
-        <span class="sr-only">Loading...</span>
-    </div>
-</div>
-<div class="d-flex justify-content-center mt-3">
-    <button class="btn font-weight-bold btn-sm ml-3 border-secondary" @onclick="(async () => await LoadMoreArticles())">More Stories</button>
-</div>
-}
-else
-{
-<div class="d-flex justify-content-center">
-    <div class="spinner-border" role="status">
-        <span class="sr-only">Loading...</span>
-    </div>
-</div>
-}
 
 @code
 {
-    private List<Article> articles;
+    private List<Article> Articles { get; set; } = new List<Article>();
+    private List<Article> SavedArticles { get; set; } = new List<Article>();
     private string loadingCss = "invisible";
+
+    string selectedTab = "feed";
 
     protected override async Task OnInitializedAsync()
     {
-        articles = await restService.GetTopStories();
+        await GetFeed();
+        await base.OnInitializedAsync();
+        await LoadMoreArticles();
+    }
+
+    private void OnSelectedTabChanged(string name)
+    {
+        selectedTab = name;
+    }
+
+    private async Task GetFeed()
+    {
+        List<Article> feedArticles = await restService.GetTopStories();
+        SavedArticles = await GetSavedArticles();
+
+        if(SavedArticles != null && SavedArticles.Count > 0)
+        {
+            feedArticles.ForEach(x =>
+            {
+                if(SavedArticles.Any(y => y.Id == x.Id))
+                {
+                    x.Saved = true;
+                }
+            });
+        }
+
+        Articles = feedArticles;
+        StateHasChanged();
+    }
+
+    private async Task<List<Article>> GetSavedArticles()
+    {
+        List<Article> localSavedArticles = await localStorage.GetItemAsync<List<Article>>("savedArticles");
+
+        if (localSavedArticles != null && localSavedArticles.Count > 0)
+        {
+            SavedArticles = localSavedArticles;
+            SavedArticles.ForEach(x => x.Saved = true);
+
+            return SavedArticles;
+        }
+        else
+        {
+            return new List<Article>();
+        }
+    }
+
+    private async Task LoadMoreArticles()
+    {
+        loadingCss = string.Empty;
+        while (restService.ArticleIds.Count > 0)
+        {
+            List<Article> newArticles = await restService.PerformFeedPaging();
+
+            if (SavedArticles != null && SavedArticles.Count > 0)
+            {
+                newArticles.ForEach(x =>
+                {
+                    if (SavedArticles.Any(y => y.Id == x.Id))
+                    {
+                        x.Saved = true;
+                    }
+                });
+            }
+            Articles.AddRange(newArticles);
+            //Articles = Articles;
+            StateHasChanged();
+        }
+        loadingCss = "invisible";
     }
 
     private async Task DeleteArticle(Article article)
     {
         List<Article> savedArticles = await localStorage.GetItemAsync<List<Article>>("savedArticles");
-        savedArticles.Remove(article);
+        savedArticles.RemoveAll(x => x.Id == article.Id);
         await localStorage.SetItemAsync("savedArticles", savedArticles);
-
-        article.Saved = false;
+        await GetFeed();
     }
 
     private async Task SaveArticle(Article article)
@@ -77,7 +141,7 @@ else
         article.Saved = true;
         List<Article> savedArticles = await localStorage.GetItemAsync<List<Article>>("savedArticles");
 
-        if(savedArticles != null)
+        if (savedArticles != null)
         {
             if (!savedArticles.Any(x => x.Id == article.Id))
             {
@@ -87,16 +151,17 @@ else
         }
         else
         {
-            savedArticles = new List<Article>{ article };
+            savedArticles = new List<Article> { article };
             await localStorage.SetItemAsync("savedArticles", savedArticles);
         }
 
+        await GetFeed();
     }
 
-    private async Task LoadMoreArticles()
+    private async Task DeleteAllSavedArticles()
     {
-        loadingCss = string.Empty;
-        articles.AddRange(await restService.PerformFeedPaging());
-        loadingCss = "invisible";
+        await localStorage.ClearAsync();
+        await GetFeed();
     }
+
 }

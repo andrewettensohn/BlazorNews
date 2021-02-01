@@ -1,0 +1,57 @@
+﻿@inject NavigationManager NavManager
+
+<Container>
+    <Row Class="mt-3">
+        <Button Class="mb-3" Color="Color.Danger" Clicked="@ShowModal">Delete All Saved Articles</Button>
+    </Row>
+    <Row>
+        <Button Color="Color.Primary" Clicked="VisitGitHubRepo">Visit GitHub Repo</Button>
+    </Row>
+</Container>
+
+<Modal @ref="modalRef">
+    <ModalBackdrop />
+    <ModalContent IsCentered="true">
+        <ModalHeader>
+            <ModalTitle>Confirmation</ModalTitle>
+            <CloseButton Clicked="CancelDelete" />
+        </ModalHeader>
+        <ModalBody>
+            <p>Are you sure you want to delete all saved articles?</p>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Danger" Clicked="ConfirmDelete">Delete</Button>
+            <Button Color="Color.Primary" Clicked="CancelDelete">Cancel</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+
+    [Parameter]
+    public EventCallback DeleteAllSavedArticles { get; set; }
+
+    private Modal modalRef;
+
+    private void ShowModal()
+    {
+        modalRef.Show();
+    }
+
+    private void ConfirmDelete()
+    {
+        DeleteAllSavedArticles.InvokeAsync(null);
+        modalRef.Hide();
+    }
+
+    private void CancelDelete()
+    {
+        modalRef.Hide();
+    }
+
+    private void VisitGitHubRepo()
+    {
+        NavManager.NavigateTo("https://github.com/andrewettensohn/BlazorNews");
+    }
+
+}
