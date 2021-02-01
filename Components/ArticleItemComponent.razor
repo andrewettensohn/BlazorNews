@@ -1,10 +1,10 @@
 ﻿@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
-<Card>
+<Card Class="@Theme.CardBackground">
     <CardBody>
-        <CardTitle Size="5" Class="mb-1"><a href="@Article.Url">@Article.Title</a></CardTitle>
+        <CardTitle Size="7" Class="mb-1"><a href="@Article.Url">@Article.Title</a></CardTitle>
         <CardText Class="mb-2">
-            <span style="opacity: 0.7">@Article.Url</span>
+            <span class="@Theme.TextColor" style="opacity: 0.7">@Article.Url</span>
         </CardText>
         @if (Article.Saved)
         {
@@ -28,5 +28,7 @@
     [Parameter]
     public EventCallback<Article> SaveArticle { get; set; }
 
+    [CascadingParameter]
+    public BlazorNewsTheme Theme { get; set; }
 
 }

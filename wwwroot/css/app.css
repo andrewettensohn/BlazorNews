@@ -26,6 +26,16 @@ app {
     align-items: center;
 }
 
+.bg-dark
+{
+    background-color: #1d1d1d !important;
+}
+
+darkCard
+{
+    background-color: #121212 !important;
+}
+
 .main {
     flex: 1;
 }

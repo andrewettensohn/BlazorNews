@@ -1,11 +1,14 @@
 ﻿@inject NavigationManager NavManager
 
 <Container>
-    <Row Class="mt-3">
-        <Button Class="mb-3" Color="Color.Danger" Clicked="@ShowModal">Delete All Saved Articles</Button>
+    <Row Class="mt-3 mb-3">
+        <Button Color="Color.Danger" Clicked="@ShowModal">Delete All Saved Articles</Button>
+    </Row>
+    <Row Class="mb-3">
+        <Button Color="Color.Primary" Clicked="VisitGitHubRepo">Visit GitHub Repo</Button>
     </Row>
     <Row>
-        <Button Color="Color.Primary" Clicked="VisitGitHubRepo">Visit GitHub Repo</Button>
+        <Button Color="Color.Light" Clicked="SetTheme">Change Theme</Button>
     </Row>
 </Container>
 
@@ -30,6 +33,9 @@
 
     [Parameter]
     public EventCallback DeleteAllSavedArticles { get; set; }
+
+    [Parameter]
+    public EventCallback SetTheme { get; set; }
 
     private Modal modalRef;
 

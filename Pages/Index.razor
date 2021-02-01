@@ -13,62 +13,124 @@
     }
 </style>
 
-<Container>
-    <h5 class="px-3">Hacker News Feed</h5>
-    <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
-        <Items>
-            <Tab Name="feed">Feed</Tab>
-            <Tab Name="saved">Saved</Tab>
-            <Tab Name="settings">Settings</Tab>
-        </Items>
-        <Content>
-            <TabPanel Name="feed">
-                <div class="d-block d-sm-none windowFeed">
-                    <Virtualize Items="@Articles" Context="article">
-                        <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
-                    </Virtualize>
-                </div>
-                <div class="d-none d-sm-block">
-                    <Virtualize Items="@Articles" Context="article">
-                        <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
-                    </Virtualize>
-                </div>
-            </TabPanel>
-            <TabPanel Name="saved">
-                <Virtualize Items="@SavedArticles" Context="article">
-                    <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
-                </Virtualize>
-            </TabPanel>
-            <TabPanel Name="settings">
-                <SettingsComponent DeleteAllSavedArticles="DeleteAllSavedArticles" />
-            </TabPanel>
-        </Content>
-    </Tabs>
-</Container>
-
+<div class="main @Theme.MainBackground">
+    <div class="content">
+        <CascadingValue Value="Theme">
+            <Container>
+                <h5 class="px-3">Hacker News Feed</h5>
+                <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
+                    <Items>
+                        <Tab Name="feed">Feed</Tab>
+                        <Tab Name="saved">Saved</Tab>
+                        <Tab Name="settings">Settings</Tab>
+                    </Items>
+                    <Content>
+                        <TabPanel Name="feed">
+                            <div class="d-block d-sm-none">
+                                <Virtualize Items="@Articles" Context="article">
+                                    <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
+                                </Virtualize>
+                            </div>
+                            <div class="d-none d-sm-block windowFeed">
+                                <Virtualize Items="@Articles" Context="article">
+                                    <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
+                                </Virtualize>
+                            </div>
+                            <div class="row justify-content-center @loadingCss">
+                                <div class="spinner-border px-2" role="status">
+                                </div>
+                            </div>
+                        </TabPanel>
+                        <TabPanel Name="saved">
+                            <div class="windowFeed">
+                                <Virtualize Items="@SavedArticles" Context="article">
+                                    <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
+                                </Virtualize>
+                            </div>
+                        </TabPanel>
+                        <TabPanel Name="settings">
+                            <div class="windowFeed">
+                                <SettingsComponent DeleteAllSavedArticles="DeleteAllSavedArticles" SetTheme="ToggleThemeSetting" />
+                            </div>
+                        </TabPanel>
+                    </Content>
+                </Tabs>
+            </Container>
+        </CascadingValue>
+        
+    </div>
+</div>
 
 @code
 {
     private List<Article> Articles { get; set; } = new List<Article>();
     private List<Article> SavedArticles { get; set; } = new List<Article>();
-    private string loadingCss = "invisible";
-
-    string selectedTab = "feed";
+    private string loadingCss = string.Empty;
+    private string selectedTab = "feed";
+    private BlazorNewsTheme Theme { get; set; } = new BlazorNewsTheme();
 
     protected override async Task OnInitializedAsync()
     {
+        await GetTheme();
         await GetFeed();
         await base.OnInitializedAsync();
         await LoadMoreArticles();
     }
 
-    private void OnSelectedTabChanged(string name)
+    private async Task GetTheme()
+    {
+        string savedTheme = await localStorage.GetItemAsStringAsync("themeSetting");
+
+        if(string.IsNullOrWhiteSpace(savedTheme) || savedTheme == "light")
+        {
+            Theme = new BlazorNewsTheme
+            {
+                MainBackground = "bg-light",
+                CardBackground = "bg-light",
+                TextColor = "text-dark"
+            };
+        }
+        else if(savedTheme == "dark")
+        {
+            Theme = new BlazorNewsTheme
+            {
+                MainBackground = "bg-dark",
+                CardBackground = "darkCard",
+                TextColor = "text-light"
+            };
+        }
+    }
+
+    private async Task ToggleThemeSetting()
+    {
+
+        string currentTheme = await localStorage.GetItemAsStringAsync("themeSetting");
+
+        if (string.IsNullOrWhiteSpace(currentTheme) || currentTheme == "light")
+        {
+            await localStorage.SetItemAsync("themeSetting", "dark");
+        }
+        else if (currentTheme == "dark")
+        {
+            await localStorage.SetItemAsync("themeSetting", "light");
+        }
+
+        await GetTheme();
+    }
+
+    private async Task OnSelectedTabChanged(string name)
     {
         selectedTab = name;
+
+        if(selectedTab == "saved")
+        {
+            SavedArticles = await GetSavedArticles();
+        }
     }
 
     private async Task GetFeed()
     {
+        loadingCss = string.Empty;
         List<Article> feedArticles = await restService.GetTopStories();
         SavedArticles = await GetSavedArticles();
 
@@ -85,6 +147,7 @@
 
         Articles = feedArticles;
         StateHasChanged();
+        loadingCss = "d-none";
     }
 
     private async Task<List<Article>> GetSavedArticles()
@@ -122,7 +185,6 @@
                 });
             }
             Articles.AddRange(newArticles);
-            //Articles = Articles;
             StateHasChanged();
         }
         loadingCss = "invisible";
@@ -155,7 +217,12 @@
             await localStorage.SetItemAsync("savedArticles", savedArticles);
         }
 
-        await GetFeed();
+        Articles.ForEach(x => {
+            if(x.Id == article.Id)
+            {
+                x.Saved = true;
+            }
+        });
     }
 
     private async Task DeleteAllSavedArticles()
