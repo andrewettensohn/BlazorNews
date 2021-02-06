@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Net;
 using System.Linq;
+using Microsoft.AspNetCore.Components;
+using Blazored.LocalStorage;
 
 namespace BlazorNews.Data
 {
@@ -41,8 +43,7 @@ namespace BlazorNews.Data
                         articles.Add(article);
                     }
                 }
-                //Remove non-articles
-                articles.RemoveAll(x => string.IsNullOrEmpty(x.Url));
+                articles.RemoveAll(x => string.IsNullOrEmpty(x.Url)); //Remove non-articles
                 Console.WriteLine($"returned {articles.Count} articles");
 
                 return articles;

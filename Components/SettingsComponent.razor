@@ -8,7 +8,7 @@
         <Button Color="Color.Primary" Clicked="VisitGitHubRepo">Visit GitHub Repo</Button>
     </Row>
     <Row>
-        <Button Color="Color.Light" Clicked="SetTheme">Change Theme</Button>
+        <Button Class="@($"{Theme.CardBackground} {Theme.TextColor}")" Clicked="ToggleTheme">Change Theme</Button>
     </Row>
 </Container>
 
@@ -31,11 +31,14 @@
 
 @code {
 
+    [CascadingParameter]
+    public BlazorNewsTheme Theme { get; set; }
+
     [Parameter]
     public EventCallback DeleteAllSavedArticles { get; set; }
 
     [Parameter]
-    public EventCallback SetTheme { get; set; }
+    public EventCallback ToggleTheme { get; set; }
 
     private Modal modalRef;
 

@@ -1,0 +1,17 @@
+﻿@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<Card Class="@Theme.CardBackground">
+    <CardBody>
+        <CardText>
+            <p class="@Theme.TextColor">...</p>
+        </CardText>
+        <Button></Button>
+    </CardBody>
+</Card>
+
+@code {
+
+    [CascadingParameter]
+    public BlazorNewsTheme Theme { get; set; }
+
+}

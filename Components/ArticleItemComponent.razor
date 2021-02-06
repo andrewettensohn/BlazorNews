@@ -2,9 +2,9 @@
 
 <Card Class="@Theme.CardBackground">
     <CardBody>
-        <CardTitle Size="7" Class="mb-1"><a href="@Article.Url">@Article.Title</a></CardTitle>
-        <CardText Class="mb-2">
-            <span class="@Theme.TextColor" style="opacity: 0.7">@Article.Url</span>
+        <CardText>
+            <p class="mb-0"><a class="@Theme.TextColor" href="@Article.Url">@Article.Title</a></p>
+            <span class="@Theme.TextColor sm" style="opacity: 0.7; font-size: x-small">@Article.Url</span>
         </CardText>
         @if (Article.Saved)
         {
@@ -12,7 +12,7 @@
         }
         else
         {
-            <Button Color="Color.Success" @onclick="() => SaveArticle.InvokeAsync(Article)">Save</Button>
+            <Button Color="Color.Primary" @onclick="() => SaveArticle.InvokeAsync(Article)">Save</Button>
         }
     </CardBody>
 </Card>

@@ -8,6 +8,42 @@ a, .btn-link {
     color: #0366d6;
 }
 
+.card-background-dark {
+    background-color: #1d1d1d !important;
+}
+
+.nav-item dark-nav-tab {
+    background-color: #121212 !important;
+    color: #ffffff !important;
+}
+
+.dark-tab {
+    background-color: #1d1d1d !important;
+    color: #ffffff !important;
+}
+
+dark-inActive-tab {
+    background-color: #1d1d1d !important;
+    color: #fff !important;
+}
+
+/*.nav-tabs .nav-link.active {
+    color: #6200ee;
+}*/
+
+.main-dark-background {
+    background-color: #121212 !important;
+}
+
+.scroll-window {
+    max-height: 1000px;
+    overflow-x: hidden;
+    margin-bottom: 10px;
+    border-bottom: 5px;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;
@@ -26,18 +62,9 @@ app {
     align-items: center;
 }
 
-.bg-dark
-{
-    background-color: #1d1d1d !important;
-}
-
-darkCard
-{
-    background-color: #121212 !important;
-}
-
 .main {
     flex: 1;
+    min-height: 1000px;
 }
 
     .main .top-row {
@@ -51,10 +78,10 @@ darkCard
             margin-left: 1.5rem;
         }
 
-.main .top-row a:first-child {
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+        .main .top-row a:first-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
 .sidebar {
     background: linear-gradient(to right, #000000, #434343);
@@ -139,12 +166,12 @@ darkCard
     z-index: 1000;
 }
 
-#blazor-error-ui .dismiss {
-    cursor: pointer;
-    position: absolute;
-    right: 0.75rem;
-    top: 0.5rem;
-}
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
 
 @media (max-width: 767.98px) {
     .main .top-row:not(.auth) {
