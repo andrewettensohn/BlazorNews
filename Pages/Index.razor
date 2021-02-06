@@ -1,7 +1,4 @@
 ﻿@page "/"
-@inject RestService restService
-@inject Blazored.LocalStorage.ILocalStorageService localStorage
-
 <style>
     .windowFeed {
         max-height: 1000px;
@@ -26,19 +23,19 @@
                     </Items>
                     <Content>
                         <TabPanel Name="feed">
-                            <div class="d-block d-sm-none">
-                                <Virtualize Items="@Articles" Context="article">
-                                    <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
+                            <div class="d-block d-sm-none windowFeed">
+                                <Virtualize ItemsProvider="LoadMoreArticles" Context="article" OverscanCount="15">
+                                    <ItemContent>
+                                        @*<ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />*@
+                                        <p>@article.Title</p>
+                                    </ItemContent>
+                                    <Placeholder>
+                                        <div class="row justify-content-center @loadingCss">
+                                            <div class="spinner-border px-2" role="status">
+                                            </div>
+                                        </div>
+                                    </Placeholder>
                                 </Virtualize>
-                            </div>
-                            <div class="d-none d-sm-block windowFeed">
-                                <Virtualize Items="@Articles" Context="article">
-                                    <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
-                                </Virtualize>
-                            </div>
-                            <div class="row justify-content-center @loadingCss">
-                                <div class="spinner-border px-2" role="status">
-                                </div>
                             </div>
                         </TabPanel>
                         <TabPanel Name="saved">
@@ -60,175 +57,3 @@
         
     </div>
 </div>
-
-@code
-{
-    private List<Article> Articles { get; set; } = new List<Article>();
-    private List<Article> SavedArticles { get; set; } = new List<Article>();
-    private string loadingCss = string.Empty;
-    private string selectedTab = "feed";
-    private BlazorNewsTheme Theme { get; set; } = new BlazorNewsTheme();
-
-    protected override async Task OnInitializedAsync()
-    {
-        await GetTheme();
-        await GetFeed();
-        await base.OnInitializedAsync();
-        await LoadMoreArticles();
-    }
-
-    private async Task GetTheme()
-    {
-        string savedTheme = await localStorage.GetItemAsStringAsync("themeSetting");
-
-        if(string.IsNullOrWhiteSpace(savedTheme) || savedTheme == "light")
-        {
-            Theme = new BlazorNewsTheme
-            {
-                MainBackground = "bg-light",
-                CardBackground = "bg-light",
-                TextColor = "text-dark"
-            };
-        }
-        else if(savedTheme == "dark")
-        {
-            Theme = new BlazorNewsTheme
-            {
-                MainBackground = "bg-dark",
-                CardBackground = "darkCard",
-                TextColor = "text-light"
-            };
-        }
-    }
-
-    private async Task ToggleThemeSetting()
-    {
-
-        string currentTheme = await localStorage.GetItemAsStringAsync("themeSetting");
-
-        if (string.IsNullOrWhiteSpace(currentTheme) || currentTheme == "light")
-        {
-            await localStorage.SetItemAsync("themeSetting", "dark");
-        }
-        else if (currentTheme == "dark")
-        {
-            await localStorage.SetItemAsync("themeSetting", "light");
-        }
-
-        await GetTheme();
-    }
-
-    private async Task OnSelectedTabChanged(string name)
-    {
-        selectedTab = name;
-
-        if(selectedTab == "saved")
-        {
-            SavedArticles = await GetSavedArticles();
-        }
-    }
-
-    private async Task GetFeed()
-    {
-        loadingCss = string.Empty;
-        List<Article> feedArticles = await restService.GetTopStories();
-        SavedArticles = await GetSavedArticles();
-
-        if(SavedArticles != null && SavedArticles.Count > 0)
-        {
-            feedArticles.ForEach(x =>
-            {
-                if(SavedArticles.Any(y => y.Id == x.Id))
-                {
-                    x.Saved = true;
-                }
-            });
-        }
-
-        Articles = feedArticles;
-        StateHasChanged();
-        loadingCss = "d-none";
-    }
-
-    private async Task<List<Article>> GetSavedArticles()
-    {
-        List<Article> localSavedArticles = await localStorage.GetItemAsync<List<Article>>("savedArticles");
-
-        if (localSavedArticles != null && localSavedArticles.Count > 0)
-        {
-            SavedArticles = localSavedArticles;
-            SavedArticles.ForEach(x => x.Saved = true);
-
-            return SavedArticles;
-        }
-        else
-        {
-            return new List<Article>();
-        }
-    }
-
-    private async Task LoadMoreArticles()
-    {
-        loadingCss = string.Empty;
-        while (restService.ArticleIds.Count > 0)
-        {
-            List<Article> newArticles = await restService.PerformFeedPaging();
-
-            if (SavedArticles != null && SavedArticles.Count > 0)
-            {
-                newArticles.ForEach(x =>
-                {
-                    if (SavedArticles.Any(y => y.Id == x.Id))
-                    {
-                        x.Saved = true;
-                    }
-                });
-            }
-            Articles.AddRange(newArticles);
-            StateHasChanged();
-        }
-        loadingCss = "invisible";
-    }
-
-    private async Task DeleteArticle(Article article)
-    {
-        List<Article> savedArticles = await localStorage.GetItemAsync<List<Article>>("savedArticles");
-        savedArticles.RemoveAll(x => x.Id == article.Id);
-        await localStorage.SetItemAsync("savedArticles", savedArticles);
-        await GetFeed();
-    }
-
-    private async Task SaveArticle(Article article)
-    {
-        article.Saved = true;
-        List<Article> savedArticles = await localStorage.GetItemAsync<List<Article>>("savedArticles");
-
-        if (savedArticles != null)
-        {
-            if (!savedArticles.Any(x => x.Id == article.Id))
-            {
-                savedArticles.Add(article);
-                await localStorage.SetItemAsync("savedArticles", savedArticles);
-            }
-        }
-        else
-        {
-            savedArticles = new List<Article> { article };
-            await localStorage.SetItemAsync("savedArticles", savedArticles);
-        }
-
-        Articles.ForEach(x => {
-            if(x.Id == article.Id)
-            {
-                x.Saved = true;
-            }
-        });
-    }
-
-    private async Task DeleteAllSavedArticles()
-    {
-        await localStorage.ClearAsync();
-        await GetFeed();
-    }
-
-}
