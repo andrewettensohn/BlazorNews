@@ -9,45 +9,52 @@
                         <h6 class="@Theme.TextColor">Hacker News Feed</h6>
                     </div>
                     <div class="col-3">
-                        <div class="spinner-border @loadingCss float-right @Theme.TextColor" role="status"></div>
+                        <div class="spinner-border @LoadingCss float-right @Theme.TextColor" role="status"></div>
                     </div>
                 </div>
-                <Tabs Class="@Theme.Tabs" SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged" FullWidth="true" Justified="true">
-                    <Items>
-                        <Tab Class="@Theme.NavItem" Name="feed">Feed</Tab>
-                        <Tab Class="@Theme.NavItem" Name="saved">Saved</Tab>
-                        <Tab Class="@Theme.NavItem" Name="settings">Settings</Tab>
-                    </Items>
-                    <Content>
-                        <TabPanel Name="feed">
-                            <div class="scroll-window">
-                                <Virtualize ItemsProvider="async (x) => await LoadMoreArticles(x)" Context="article">
-                                    <ItemContent>
-                                        <ArticleItemComponent Article="article" DeleteArticle="DeleteArticle" SaveArticle="SaveArticle" />
-                                    </ItemContent>
-                                    <Placeholder>
-                                        <LoadingPlaceholderComponentrazor />
-                                    </Placeholder>
-                                </Virtualize>
+                <ul class="nav nav-pills nav-fill">
+                    <li class="nav-item rounded @TabSelectionVisbility.FeedActiveCss">
+                        <a href="#" class="nav-link @Theme.TextColor" @onclick="() => OnChangeTabSelection(TabSelection.Feed)">Feed</a>
+                    </li>
+                    <li class="nav-item rounded @TabSelectionVisbility.SavedActiveCss">
+                        <a href="#" class="nav-link @Theme.TextColor" @onclick="() => OnChangeTabSelection(TabSelection.Saved)">Saved</a>
+                    </li>
+                    <li class="nav-item rounded @TabSelectionVisbility.SettingsActiveCss">
+                        <a href="#" class="nav-link @Theme.TextColor" @onclick="() => OnChangeTabSelection(TabSelection.Settings)">Settings</a>
+                    </li>
+                </ul>
+                <div class="@TabSelectionVisbility.DisplayFeedCss">
+                    <div class="scroll-window">
+                        <Virtualize ItemsProvider="async (x) => await LoadMoreArticles(x)" Context="article" OverscanCount="20">
+                            <ItemContent>
+                                <ArticleItemComponent Article="article" DeleteArticle="DeleteArticle" SaveArticle="SaveArticle" />
+                            </ItemContent>
+                        </Virtualize>
+                    </div>
+                </div>
+                <div class="@TabSelectionVisbility.DisplaySavedCss">
+                    <div class="scroll-window">
+                        @if (SavedArticles.Any())
+                        {
+                            <Virtualize Items="@SavedArticles" Context="article">
+                                <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
+                            </Virtualize>
+                        }
+                        else
+                        {
+                            <div class="row mt-3 justify-content-center">
+                                <span class="@Theme.TextColor">You have no saved articles.</span>
                             </div>
-                        </TabPanel>
-                        <TabPanel Name="saved">
-                            <div class="scroll-window">
-                                <Virtualize Items="@SavedArticles" Context="article">
-                                    <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
-                                </Virtualize>
-                            </div>
-                        </TabPanel>
-                        <TabPanel Name="settings">
-                            <div class="scroll-window">
-                                <SettingsComponent DeleteAllSavedArticles="DeleteAllSavedArticles" ToggleTheme="ToggleThemeSetting" />
-                            </div>
-                        </TabPanel>
-                    </Content>
-                </Tabs>
+                        }
+                    </div>
+                </div>
+                <div class="@TabSelectionVisbility.DisplaySettingsCss">
+                    <div class="scroll-window">
+                        <SettingsComponent DeleteAllSavedArticles="DeleteAllSavedArticles" ToggleTheme="ToggleThemeSetting" />
+                    </div>
+                </div>
             </Container>
         </CascadingValue>
-        
     </div>
 </div>
 
@@ -60,14 +67,40 @@
     ILocalStorageService LocalStorage { get; set; }
 
     private List<Article> SavedArticles { get; set; } = new List<Article>();
-    private string loadingCss = string.Empty;
-    private string selectedTab = "feed";
     private BlazorNewsTheme Theme { get; set; } = new BlazorNewsTheme();
+    private TabSelectionVisbility TabSelectionVisbility { get; set; } = new TabSelectionVisbility();
+
+    private string LoadingCss = string.Empty;
+
+    private async Task OnChangeTabSelection(TabSelection tabSelection)
+    {
+        TabSelectionVisbility.SetAllVisibility(false);
+        await SetVisbilityForTabSelection(tabSelection);
+        StateHasChanged();
+    }
+
+    private async Task SetVisbilityForTabSelection(TabSelection tabSelection)
+    {
+        if (tabSelection == TabSelection.Feed)
+        {
+            TabSelectionVisbility.DisplayFeed = true;
+        }
+        else if (tabSelection == TabSelection.Saved)
+        {
+            SavedArticles = await GetSavedArticles();
+            TabSelectionVisbility.DisplaySaved = true;
+        }
+        else if (tabSelection == TabSelection.Settings)
+        {
+            TabSelectionVisbility.DisplaySettings = true;
+        }
+    }
 
     protected async override Task OnInitializedAsync()
     {
         try
         {
+            await SetVisbilityForTabSelection(TabSelection.Feed);
             await GetTheme();
             await GetSavedArticles();
             await LoadMoreArticles(new ItemsProviderRequest(0, 15, CancellationToken.None));
@@ -79,19 +112,11 @@
         }
     }
 
-    private async Task OnSelectedTabChanged(string name)
-    {
-        selectedTab = name;
-
-        if (selectedTab == "saved")
-        {
-            SavedArticles = await GetSavedArticles();
-        }
-    }
-
     private async ValueTask<ItemsProviderResult<Article>> LoadMoreArticles(ItemsProviderRequest request)
     {
-        loadingCss = string.Empty;
+        LoadingCss = string.Empty;
+        StateHasChanged();
+
         try
         {
             if(RestService.ArticleIds is null)
@@ -106,7 +131,8 @@
             {
                 SetArticleSaveToTrueIfSaved(newArticles);
 
-                loadingCss = "d-none";
+                LoadingCss = "d-none";
+                StateHasChanged();
                 return new ItemsProviderResult<Article>(newArticles, RestService.ArticleIds.Count);
             }
         }
@@ -115,7 +141,8 @@
             Console.WriteLine(ex);
         }
 
-        loadingCss = "d-none";
+        LoadingCss = "d-none";
+        StateHasChanged();
         return new ItemsProviderResult<Article>(new List<Article>(), RestService.ArticleIds.Count);
     }
 
@@ -193,10 +220,12 @@
         if(parseThemeSetting && isDark)
         {
             Theme.ToggleTheme(true);
+            TabSelectionVisbility.ActiveTabCss = Theme.ActiveTab;
         }
         else
         {
             Theme.ToggleTheme(false);
+            TabSelectionVisbility.ActiveTabCss = Theme.ActiveTab;
         }
     }
 

@@ -10,8 +10,7 @@ namespace BlazorNews.Models
         public string TextColor { get; set; }
         public string MainBackground { get; set; }
         public string CardBackground { get; set; }
-        public string NavItem { get; set; }
-        public string Tabs { get; set; }
+        public string ActiveTab { get; set; }
 
         /// <summary>
         /// true for dark, false for light
@@ -23,16 +22,14 @@ namespace BlazorNews.Models
                 MainBackground = "main-dark-background";
                 CardBackground = "card-background-dark";
                 TextColor = "text-light";
-                NavItem = "dark-nav-tab";
-                Tabs = "dark-tab";
+                ActiveTab = "active-pill-dark";
             }
             else
             {
                 MainBackground = "bg-light";
                 CardBackground = "bg-light";
                 TextColor = "text-dark";
-                NavItem = string.Empty;
-                Tabs = string.Empty;
+                ActiveTab = "active-pill-light";
             }
         }
     }

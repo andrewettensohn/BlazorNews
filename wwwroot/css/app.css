@@ -12,36 +12,31 @@ a, .btn-link {
     background-color: #1d1d1d !important;
 }
 
-.nav-item dark-nav-tab {
-    background-color: #121212 !important;
-    color: #ffffff !important;
-}
-
-.dark-tab {
-    background-color: #1d1d1d !important;
-    color: #ffffff !important;
-}
-
-dark-inActive-tab {
-    background-color: #1d1d1d !important;
-    color: #fff !important;
-}
-
-/*.nav-tabs .nav-link.active {
-    color: #6200ee;
-}*/
-
 .main-dark-background {
     background-color: #121212 !important;
 }
 
+.active-pill-dark {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 3px solid #ffffff;
+    font-weight: bold;
+}
+
+.active-pill-light {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 3px solid #121212;
+    font-weight: bold;
+}
+
+
 .scroll-window {
     max-height: 1000px;
     overflow-x: hidden;
-    margin-bottom: 10px;
-    border-bottom: 5px;
     overflow-y: scroll;
-    -webkit-overflow-scrolling: touch;
 }
 
 .btn-primary {
