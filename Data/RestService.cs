@@ -76,5 +76,37 @@ namespace BlazorNews.Data
                 Debug.WriteLine(ex);
             }
         }
+
+        public async Task<List<Comment>> GetComments(List<int> commentIds)
+        {
+            try
+            {
+
+                Uri itemBaseUri = new Uri(Constants.itemBaseUrl);
+                List<Comment> comments = new List<Comment>();
+
+                foreach (int id in commentIds)
+                {
+                    HttpResponseMessage commentResponse = await Client.GetAsync($"{itemBaseUri}/{id}.json");
+
+                    if (commentResponse.StatusCode == HttpStatusCode.OK)
+                    {
+                        string jsonContent = await commentResponse.Content.ReadAsStringAsync();
+                        Comment comment = JsonConvert.DeserializeObject<Comment>(jsonContent);
+                        //comment.Id = id;
+                        comments.Add(comment);
+                    }
+                }
+                //comment.RemoveAll(x => string.IsNullOrEmpty(x.Url)); //Remove non-articles
+                Console.WriteLine($"returned {comments.Count} comments");
+
+                return comments;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
     }
 }
