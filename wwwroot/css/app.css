@@ -2,10 +2,48 @@
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    overflow: hidden;
 }
 
 a, .btn-link {
     color: #0366d6;
+}
+
+.card-background-dark {
+    background-color: #1d1d1d !important;
+}
+
+.main-dark-background {
+    background-color: #121212 !important;
+}
+
+.active-pill-dark {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 3px solid #ffffff;
+    font-weight: bold;
+}
+
+.active-pill-light {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 3px solid #121212;
+    font-weight: bold;
+}
+
+
+.scroll-window {
+    max-height: 1000px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+.comments-scroll-window {
+    max-height: 300px;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 
 .btn-primary {
@@ -28,6 +66,7 @@ app {
 
 .main {
     flex: 1;
+    min-height: 1000px;
 }
 
     .main .top-row {
@@ -41,10 +80,10 @@ app {
             margin-left: 1.5rem;
         }
 
-.main .top-row a:first-child {
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+        .main .top-row a:first-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
 .sidebar {
     background: linear-gradient(to right, #000000, #434343);
@@ -129,12 +168,12 @@ app {
     z-index: 1000;
 }
 
-#blazor-error-ui .dismiss {
-    cursor: pointer;
-    position: absolute;
-    right: 0.75rem;
-    top: 0.5rem;
-}
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
 
 @media (max-width: 767.98px) {
     .main .top-row:not(.auth) {

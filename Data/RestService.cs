@@ -6,47 +6,34 @@ using BlazorNews.Models;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Net;
+using System.Linq;
+using Microsoft.AspNetCore.Components;
+using Blazored.LocalStorage;
 
 namespace BlazorNews.Data
 {
     public class RestService
     {
-        HttpClient client;
+        private readonly HttpClient Client;
         public List<int> ArticleIds { get; set; }
-
-        public readonly int PageCount = 15;
 
         public RestService(HttpClient http)
         {
-            client = http;
+            Client = http;
         }
 
-        public async Task<List<Article>> PerformFeedPaging()
+        public async Task<List<Article>> GetArticlesFromIds(int startIndex, int numArticles)
         {
-            List<int> newPageIds = ArticleIds.GetRange(0, PageCount);
-            ArticleIds.RemoveRange(0, PageCount);
-
-            List<Article> newArticles = await GetArticlesFromIds(newPageIds);
-            newArticles = RemoveNonArticles(newArticles);
-            return newArticles;
-        }
-
-        private List<Article> RemoveNonArticles(List<Article> articles)
-        {
-            articles.RemoveAll(x => string.IsNullOrEmpty(x.Url));
-            return articles;
-        }
-
-        private async Task<List<Article>> GetArticlesFromIds(List<int> ids)
-        {
-            Uri itemBaseUri = new Uri(string.Format(Constants.itemBaseUrl, string.Empty));
-            List<Article> articles = new List<Article>();
-
-            foreach (int articleId in ids)
+            try
             {
-                try
+                List<int> ids = ArticleIds.GetRange(startIndex, numArticles);
+
+                Uri itemBaseUri = new Uri(Constants.itemBaseUrl);
+                List<Article> articles = new List<Article>();
+
+                foreach (int articleId in ids)
                 {
-                    HttpResponseMessage articleResponse = await client.GetAsync($"{itemBaseUri}/{articleId}.json");
+                    HttpResponseMessage articleResponse = await Client.GetAsync($"{itemBaseUri}/{articleId}.json");
 
                     if (articleResponse.StatusCode == HttpStatusCode.OK)
                     {
@@ -56,42 +43,70 @@ namespace BlazorNews.Data
                         articles.Add(article);
                     }
                 }
-                catch (Exception exc)
-                {
-                    Debug.WriteLine(exc);
-                }
-            }
+                articles.RemoveAll(x => string.IsNullOrEmpty(x.Url)); //Remove non-articles
+                Console.WriteLine($"returned {articles.Count} articles");
 
-            return articles;
+                return articles;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
         }
 
-        public async Task<List<Article>> GetTopStories()
+        public async Task GetArticleIds()
         {
-            List<Article> topArticles = new List<Article>();
-            Uri topStoryIdsUri = new Uri(string.Format(Constants.topStoriesUri, string.Empty));
+            Uri topStoryIdsUri = new Uri(Constants.topStoriesUri);
 
             try
             {
-                HttpResponseMessage idResponse = await client.GetAsync(topStoryIdsUri);
+                Console.WriteLine($"Making request for article Ids");
+                HttpResponseMessage idResponse = await Client.GetAsync(topStoryIdsUri);
 
                 if (idResponse.StatusCode == HttpStatusCode.OK)
                 {
                     string idsJsonContent = await idResponse.Content.ReadAsStringAsync();
                     ArticleIds = JsonConvert.DeserializeObject<List<int>>(idsJsonContent);
-
-                    List<int> firstPageIds = ArticleIds.GetRange(0, PageCount);
-                    ArticleIds.RemoveRange(0, PageCount);
-
-                    topArticles = await GetArticlesFromIds(firstPageIds);
-                    topArticles = RemoveNonArticles(topArticles);
+                    Console.WriteLine($"Returned {ArticleIds.Count} articles");
                 }
             }
-            catch (Exception exc)
+            catch (Exception ex)
             {
-                Debug.WriteLine(exc);
+                Debug.WriteLine(ex);
             }
+        }
 
-            return topArticles;
+        public async Task<List<Comment>> GetComments(List<int> commentIds)
+        {
+            try
+            {
+
+                Uri itemBaseUri = new Uri(Constants.itemBaseUrl);
+                List<Comment> comments = new List<Comment>();
+
+                foreach (int id in commentIds)
+                {
+                    HttpResponseMessage commentResponse = await Client.GetAsync($"{itemBaseUri}/{id}.json");
+
+                    if (commentResponse.StatusCode == HttpStatusCode.OK)
+                    {
+                        string jsonContent = await commentResponse.Content.ReadAsStringAsync();
+                        Comment comment = JsonConvert.DeserializeObject<Comment>(jsonContent);
+                        //comment.Id = id;
+                        comments.Add(comment);
+                    }
+                }
+                //comment.RemoveAll(x => string.IsNullOrEmpty(x.Url)); //Remove non-articles
+                Console.WriteLine($"returned {comments.Count} comments");
+
+                return comments;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
         }
     }
 }

@@ -1,0 +1,84 @@
+﻿@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<Card Class="@Theme.CardBackground">
+    <CardBody>
+        <CardText>
+            <p class="mb-0"><a class="@Theme.TextColor" href="@Article.Url" target="_blank" rel="noopener noreferrer">@Article.Title</a></p>
+            <span class="@Theme.TextColor sm" style="opacity: 0.7; font-size: x-small">@Article.Url</span>
+        </CardText>
+        <div class="row">
+            @if (Article.Saved)
+            {
+                <Button class="mx-1" Color="Color.Danger" @onclick="() => DeleteArticle.InvokeAsync(Article)">Unsave</Button>
+            }
+            else
+            {
+                <Button class="mx-1" Color="Color.Info" @onclick="() => SaveArticle.InvokeAsync(Article)">Save</Button>
+            }
+            <Button class="mx-1" Color="Color.Info" @onclick="async () => await OnComments()">Comments</Button>
+            <div class="spinner-border @LoadingCss float-right @Theme.TextColor" role="status"></div>
+        </div>
+    </CardBody>
+    <div class="@CommentSectionCss mt-3 comments-scroll-window">
+        @if (Comments != null && Comments.Any())
+        {
+            @foreach (Comment comment in Comments)
+            {
+                if (!string.IsNullOrWhiteSpace(comment.Text))
+                {
+                    <p class="list-group-item @Theme.CardBackground @Theme.TextColor">@((MarkupString)comment.Text)</p>
+                    <span class="@Theme.TextColor sm" style="opacity: 0.7; font-size: x-small">@comment.By</span>
+                    <hr class="@Theme.ActiveTab" />
+                }
+            }
+        }
+        else if(!IsLoading)
+        {
+            <p class="@Theme.TextColor">No Comments.</p>
+        }
+    </div>
+</Card>
+
+@code {
+
+    [Inject]
+    public RestService RestService { get; set; }
+
+    [Parameter]
+    public Article Article { get; set; }
+
+    [Parameter]
+    public EventCallback<Article> DeleteArticle { get; set; }
+
+    [Parameter]
+    public EventCallback<Article> SaveArticle { get; set; }
+
+    [CascadingParameter]
+    public BlazorNewsTheme Theme { get; set; }
+
+    private List<Comment> Comments { get; set; } = new List<Comment>();
+
+    private const string NoDisplayCss = "d-none";
+
+    private bool DisplayCommentSection { get; set; }
+    private string CommentSectionCss => DisplayCommentSection ? string.Empty : NoDisplayCss;
+
+    private bool IsLoading { get; set; }
+    private string LoadingCss => IsLoading ? string.Empty : NoDisplayCss;
+
+    private async Task OnComments()
+    {
+        DisplayCommentSection = !DisplayCommentSection;
+
+        if(DisplayCommentSection)
+        {
+            IsLoading = true;
+            StateHasChanged();
+
+            Comments = await RestService.GetComments(Article.Kids);
+
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+}
