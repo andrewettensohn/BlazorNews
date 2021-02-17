@@ -15,7 +15,15 @@
             {
                 <Button class="mx-1" Color="Color.Info" @onclick="() => SaveArticle.InvokeAsync(Article)">Save</Button>
             }
-            <Button class="mx-1" Color="Color.Info" @onclick="async () => await OnComments()">Comments</Button>
+
+            @if (DisplayCommentSection)
+            {
+                <Button class="mx-1" Color="Color.Danger" @onclick="async () => await OnComments()">Close Comments</Button>
+            }
+            else
+            {
+                <Button class="mx-1" Color="Color.Info" @onclick="async () => await OnComments()">Comments</Button>
+            }
             <div class="spinner-border @LoadingCss float-right @Theme.TextColor" role="status"></div>
         </div>
     </CardBody>
