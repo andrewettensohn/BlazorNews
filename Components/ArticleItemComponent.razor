@@ -19,15 +19,22 @@
             <div class="spinner-border @LoadingCss float-right @Theme.TextColor" role="status"></div>
         </div>
     </CardBody>
-    <div class="@CommentSectionCss mt-3">
-        @foreach (Comment comment in Comments)
+    <div class="@CommentSectionCss mt-3 comments-scroll-window">
+        @if (Comments != null && Comments.Any())
         {
-            if (!string.IsNullOrWhiteSpace(comment.Text))
+            @foreach (Comment comment in Comments)
             {
-                <p class="list-group-item @Theme.CardBackground @Theme.TextColor">@((MarkupString)comment.Text)</p>
-                <span class="@Theme.TextColor sm" style="opacity: 0.7; font-size: x-small">@comment.By</span>
-                <hr class="@Theme.ActiveTab" />
+                if (!string.IsNullOrWhiteSpace(comment.Text))
+                {
+                    <p class="list-group-item @Theme.CardBackground @Theme.TextColor">@((MarkupString)comment.Text)</p>
+                    <span class="@Theme.TextColor sm" style="opacity: 0.7; font-size: x-small">@comment.By</span>
+                    <hr class="@Theme.ActiveTab" />
+                }
             }
+        }
+        else if(!IsLoading)
+        {
+            <p class="@Theme.TextColor">No Comments.</p>
         }
     </div>
 </Card>

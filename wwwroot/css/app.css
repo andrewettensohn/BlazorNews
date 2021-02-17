@@ -40,6 +40,12 @@ a, .btn-link {
     overflow-y: scroll;
 }
 
+.comments-scroll-window {
+    max-height: 300px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;
