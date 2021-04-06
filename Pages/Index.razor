@@ -73,6 +73,9 @@
     [Inject]
     ILocalStorageService LocalStorage { get; set; }
 
+    [Inject]
+    NavigationManager NavManager {get; set; }
+
     private List<Article> SavedArticles { get; set; } = new List<Article>();
     private BlazorNewsTheme Theme { get; set; } = new BlazorNewsTheme();
     private TabSelectionVisbility TabSelectionVisbility { get; set; } = new TabSelectionVisbility();
@@ -119,10 +122,9 @@
         }
     }
 
-    private async Task ReloadList()
+    private void ReloadList()
     {
-        RestService.ArticleIds = null;
-        await LoadMoreArticles(new ItemsProviderRequest(0, 15, CancellationToken.None));
+        NavManager.NavigateTo("");
     }
 
     private async ValueTask<ItemsProviderResult<Article>> LoadMoreArticles(ItemsProviderRequest request)
@@ -214,6 +216,7 @@
     private async Task DeleteAllSavedArticles()
     {
         await LocalStorage.ClearAsync();
+        NavManager.NavigateTo("");
     }
 
     private async Task DeleteArticle(Article article)
