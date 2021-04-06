@@ -9,7 +9,14 @@
                         <h6 class="@Theme.TextColor">Hacker News Feed</h6>
                     </div>
                     <div class="col-3">
-                        <div class="spinner-border @LoadingCss float-right @Theme.TextColor" role="status"></div>
+                        @if (!string.IsNullOrWhiteSpace(LoadingCss))
+                        {
+                            <Button class="float-right" Clicked="ReloadList"><Icon Class="@Theme.TextColor" Name="IconName.Sync"></Icon></Button>
+                        }
+                        else
+                        {
+                            <div class="spinner-border @LoadingCss float-right @Theme.TextColor" role="status"></div>
+                        }
                     </div>
                 </div>
                 <ul class="nav nav-pills nav-fill">
@@ -110,6 +117,12 @@
         {
             Console.WriteLine(ex);
         }
+    }
+
+    private async Task ReloadList()
+    {
+        RestService.ArticleIds = null;
+        await LoadMoreArticles(new ItemsProviderRequest(0, 15, CancellationToken.None));
     }
 
     private async ValueTask<ItemsProviderResult<Article>> LoadMoreArticles(ItemsProviderRequest request)
