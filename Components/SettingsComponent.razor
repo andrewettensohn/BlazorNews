@@ -51,6 +51,7 @@
     {
         DeleteAllSavedArticles.InvokeAsync(null);
         modalRef.Hide();
+        NavManager.NavigateTo("", true);
     }
 
     private void CancelDelete()

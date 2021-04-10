@@ -124,7 +124,7 @@
 
     private void ReloadList()
     {
-        NavManager.NavigateTo("");
+        NavManager.NavigateTo("", true);
     }
 
     private async ValueTask<ItemsProviderResult<Article>> LoadMoreArticles(ItemsProviderRequest request)
