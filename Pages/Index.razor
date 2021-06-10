@@ -9,7 +9,14 @@
                         <h6 class="@Theme.TextColor">Hacker News Feed</h6>
                     </div>
                     <div class="col-3">
-                        <div class="spinner-border @LoadingCss float-right @Theme.TextColor" role="status"></div>
+                        @if (!string.IsNullOrWhiteSpace(LoadingCss))
+                        {
+                            <Button class="float-right" Clicked="ReloadList"><Icon Class="@Theme.TextColor" Name="IconName.Sync"></Icon></Button>
+                        }
+                        else
+                        {
+                            <div class="spinner-border @LoadingCss float-right @Theme.TextColor" role="status"></div>
+                        }
                     </div>
                 </div>
                 <ul class="nav nav-pills nav-fill">
@@ -66,6 +73,9 @@
     [Inject]
     ILocalStorageService LocalStorage { get; set; }
 
+    [Inject]
+    NavigationManager NavManager {get; set; }
+
     private List<Article> SavedArticles { get; set; } = new List<Article>();
     private BlazorNewsTheme Theme { get; set; } = new BlazorNewsTheme();
     private TabSelectionVisbility TabSelectionVisbility { get; set; } = new TabSelectionVisbility();
@@ -110,6 +120,11 @@
         {
             Console.WriteLine(ex);
         }
+    }
+
+    private void ReloadList()
+    {
+        NavManager.NavigateTo("", true);
     }
 
     private async ValueTask<ItemsProviderResult<Article>> LoadMoreArticles(ItemsProviderRequest request)
@@ -201,6 +216,7 @@
     private async Task DeleteAllSavedArticles()
     {
         await LocalStorage.ClearAsync();
+        NavManager.NavigateTo("");
     }
 
     private async Task DeleteArticle(Article article)
