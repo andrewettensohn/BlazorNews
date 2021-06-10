@@ -93,11 +93,11 @@ namespace BlazorNews.Data
                     {
                         string jsonContent = await commentResponse.Content.ReadAsStringAsync();
                         Comment comment = JsonConvert.DeserializeObject<Comment>(jsonContent);
-                        //comment.Id = id;
+
                         comments.Add(comment);
                     }
                 }
-                //comment.RemoveAll(x => string.IsNullOrEmpty(x.Url)); //Remove non-articles
+
                 Console.WriteLine($"returned {comments.Count} comments");
 
                 return comments;

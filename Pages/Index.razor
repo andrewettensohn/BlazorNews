@@ -25,7 +25,7 @@
                 </ul>
                 <div class="@TabSelectionVisbility.DisplayFeedCss">
                     <div class="scroll-window">
-                        <Virtualize ItemsProvider="async (x) => await LoadMoreArticles(x)" Context="article" OverscanCount="20">
+                        <Virtualize ItemsProvider="async (x) => await LoadMoreArticles(x)" Context="article" OverscanCount="10">
                             <ItemContent>
                                 <ArticleItemComponent Article="article" DeleteArticle="DeleteArticle" SaveArticle="SaveArticle" />
                             </ItemContent>
@@ -34,11 +34,11 @@
                 </div>
                 <div class="@TabSelectionVisbility.DisplaySavedCss">
                     <div class="scroll-window">
-                        @if (SavedArticles.Any())
-                        {
                             <Virtualize Items="@SavedArticles" Context="article">
                                 <ArticleItemComponent Article="article" SaveArticle="SaveArticle" DeleteArticle="DeleteArticle" />
                             </Virtualize>
+                        @if (SavedArticles.Any())
+                        {
                         }
                         else
                         {

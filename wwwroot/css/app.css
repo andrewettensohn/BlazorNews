@@ -35,7 +35,7 @@ a, .btn-link {
 
 
 .scroll-window {
-    max-height: 1000px;
+    max-height: 90vh;
     overflow-x: hidden;
     overflow-y: scroll;
 }
